@@ -1,24 +1,29 @@
+using NewsService.Utils;
+using NewsService.Services;
+
+// load envs 
+DotEnv.Load(".env");
+
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
 
-builder.Services.AddControllers();
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
-builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+// Add services to the container.
+builder.Services.AddSingleton<NewsStoryService>();
+
+builder.Services.AddControllers()
+    .AddJsonOptions(options =>
+        {
+            options.JsonSerializerOptions.PropertyNamingPolicy = null;
+        });
 
 var app = builder.Build();
 
+// Attach our AuthMiddleware
+app.Use((context, next) => AuthService.Authorize(context, next));
+
 // Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
-{
-    app.UseSwagger();
-    app.UseSwaggerUI();
-}
 
 app.UseHttpsRedirection();
-
-app.UseAuthorization();
 
 app.MapControllers();
 
